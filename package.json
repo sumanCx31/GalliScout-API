@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "watch":"nodemon index.js"
+    "watch": "nodemon index.js"
   },
   "repository": {
     "type": "git",
@@ -19,7 +19,8 @@
   },
   "homepage": "https://github.com/sumanCx31/GalliScout-API#readme",
   "dependencies": {
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "joi": "^18.1.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

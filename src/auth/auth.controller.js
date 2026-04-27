@@ -1,7 +1,11 @@
 class AuthController {
     register = async(req,res)=>{
         try {
+            const data = req.body;
+            console.log(data);
+            
             res.json({
+                data:data,
                 message:"This is register route",
                 status:"success"
             })

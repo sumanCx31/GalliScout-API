@@ -3,7 +3,7 @@ const app = require("./src/config/express.config")
 
 const server = http.createServer(app);
 
-const PORT =9004;
+const PORT =9007;
 
 server.listen(PORT,"localhost",(err)=>{
 if(!err)
