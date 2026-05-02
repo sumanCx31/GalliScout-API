@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
-const { USER_ROLES, Status, GENDER } = require("../../config/constants");
-const { string } = require("joi");
+const { USER_ROLES, Status, GENDER } = require("../config/constants");
 
 
 const UserSchema = new mongoose.Schema({
@@ -22,7 +21,7 @@ const UserSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: Object.values(USER_ROLES),
-    default: USER_ROLES.PASSENGER,
+    default: USER_ROLES.USER,
   },
   status: {
     type: String,
