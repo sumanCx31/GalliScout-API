@@ -1,10 +1,21 @@
-const express = require('express');
-const router = require('./router.config');
+const express = require("express");
 require("./mongodb.config");
+const router = require("./router.config");
+const cors = require("cors");
+const helmet = require("helmet");
+const { deleteFile } = require("../../utilities/helper");
 
 const app = express();
+app.use(cors({
+  origin:"*"
+}));
+
+app.use(helmet());
 app.use(express.json());
-app.use("/api/v1/",router);
+app.use(express.urlencoded({ extended: true }));
+
+app.use("/api/v1", router);
+
 
 app.use((req, res, next) => {
   next({
@@ -14,7 +25,7 @@ app.use((req, res, next) => {
   });
 });
 
-// Global error handler
+
 app.use((err, req, res, next) => {
   let code = err.code || 500;
   let detail = err.detail || null;
@@ -49,5 +60,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-
-module.exports =app;
+module.exports = app;

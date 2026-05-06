@@ -20,7 +20,7 @@ const UserRegistrationDTO = Joi.object({
 
   address: Joi.string().min(3).max(100).required(),
 
-  image: Joi.string().uri().optional().allow(null),
+  // image: Joi.string().uri().optional().allow(null),
 
   role: Joi.string().valid("user", "owner", "admin", "agent").default("user"),
 

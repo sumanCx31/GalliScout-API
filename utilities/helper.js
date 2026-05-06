@@ -11,6 +11,16 @@ const randomStringGenerator = (length = 100) => {
     return random;
 }
 
+const randomNumberGenerator = (length = 6)=>{
+    let nums = "0123456789";
+    let random= '';
+    for(let i =0;i<length;i++){
+         const posn = Math.ceil(Math.random()*nums.length);
+            random += nums[posn];
+    }
+    return random;
+}
+
 const deleteFile = (filePath) => {
     if(fs.existsSync(filePath)){
         fs.unlinkSync(filePath);
@@ -18,5 +28,6 @@ const deleteFile = (filePath) => {
 }
 module.exports = {
     randomStringGenerator,
+    randomNumberGenerator,
     deleteFile,
 }

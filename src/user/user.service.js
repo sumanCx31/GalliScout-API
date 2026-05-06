@@ -10,7 +10,6 @@ class UserService {
       address: user.address,
       phone: user.phone,
       gender: user.gender,
-      dob: user.dob,
       image: user.image,
       _id: user._id,
       createdBy: user.createdBy,
