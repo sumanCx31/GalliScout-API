@@ -1,4 +1,5 @@
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const { Status } = require("../config/constants");
 const {
   randomStringGenerator,
@@ -7,6 +8,10 @@ const {
 const userSvc = require("../user/user.service");
 const cloudinarySvc = require("../services'/cloudinary.service");
 const authSvc = require("./auth.service");
+const UserModel = require("../user/user.model");
+const { message } = require("./auth.validator");
+const AuthModel = require("./auth.model");
+const { jwtConfig } = require("../config/config");
 
 
 class AuthController {
@@ -28,6 +33,111 @@ class AuthController {
       throw exception;
     }
   };
+  activateAccount = async(req,res)=>{
+    try {
+      const {email,activationToken} = req.body;
+      const user = await UserModel.findOne({email:email});
+      
+      if(user.status === Status.ACTIVE){
+        throw{
+          code:400,
+          message:"Account already activated",
+          status:"BAD_REQUEST"
+        }
+      }
+
+      if(user.activationToken !== activationToken ){
+        throw{
+          code:404,
+          message:"Invalid activation token",
+          status:"NOT_FOUND"
+        }
+      }
+      user.status=Status.ACTIVE;
+      user.activationToken = null;
+      await user.save();
+
+      res.json({
+        message:"Account activated successfully",
+        status:"success"
+      })
+    } catch (exception) {
+      throw exception;
+    }
+  };
+  login = async(req,res)=>{
+    try {
+      const {email,password}=req.body;
+      const user = await UserModel.findOne({email:email});
+      if(!user){
+        throw{
+          code:404,
+          message:"User not found",
+          status:"NOT_FOUND"
+        }
+      }
+      if(user.status !== Status.ACTIVE){
+        throw{
+          code:403,
+          message:"Account not activated",
+          status:"FORBIDDEN"
+        }
+      }
+      const isPasswordValid = await bcrypt.compare(password,user.password);
+      if(!isPasswordValid){
+        throw{
+          code:401,
+          message:"Invalid credentials",
+          status:"UNAUTHORIZED"
+        }
+      }
+       const accessToken = jwt.sign(
+        {
+          sub: user._id,
+          typ: "Bearer",
+        },
+        jwtConfig.secret,
+        {
+          expiresIn: "1h",
+        },
+      );
+      const refreshToken = jwt.sign(
+        {
+          sub: user._id,
+          typ: "Refresh",
+        },
+        jwtConfig.secret,
+        {
+          expiresIn: "1d",
+        },
+      );
+
+      const maskedAccessToken = randomStringGenerator(150);
+      const maskedRefreshToken = randomStringGenerator(150);
+
+      const authData = {
+        userId: user._id,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        maskedAccessToken: maskedAccessToken,
+        maskedRefreshToken: maskedRefreshToken,
+      };
+      await authSvc.createAuthData(authData);
+      // console.log("Login success");
+
+      res.json({
+        data: {
+          accessToken: maskedAccessToken,
+          refreshToken: maskedRefreshToken,
+        },
+        message: "Welcome to " + user.role + "Pannel",
+        status: "LOGIN_SUCCESS",
+        options: null,
+      });
+    } catch (exception) {
+      throw exception;
+    }
+  }
 }
 
 const authCltr = new AuthController();

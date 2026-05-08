@@ -24,7 +24,8 @@ const authSchema =  new mongoose.Schema({
     },
     client:{
         type: String,
-    },
+    }
+},{
     timestamps: true,
     autoCreate: true,
     autoIndex: true

@@ -5,6 +5,10 @@ const DbConfig = {
   mongoDBName: process.env.MONGODB_NAME,
 }
 
+const jwtConfig = {
+  secret: process.env.JWT_SECRET,
+}
+
 const SMTPConfig = {
   provider: process.env.SMTP_PROVIDER,
   host: process.env.STMP_HOST || "smtp.gmail.com",
@@ -21,4 +25,4 @@ const CloudinaryConfig = {
   cloudinarySecretKey: process.env.CLOUDINARY_SECRET_KEY,
 }
 
-module.exports = { DbConfig , CloudinaryConfig, SMTPConfig };
+module.exports = { DbConfig , jwtConfig, CloudinaryConfig, SMTPConfig };

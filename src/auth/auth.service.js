@@ -3,6 +3,7 @@ const { Status } = require("../config/constants");
 const { randomNumberGenerator } = require("../../utilities/helper");
 const emailSvc = require("../services'/email.service");
 const cloudinarySvc = require("../services'/cloudinary.service");
+const AuthModel = require("./auth.model");
 
 
 class AuthService {
@@ -20,6 +21,14 @@ class AuthService {
     throw exception;
   }
 }
+createAuthData = async (data) => {
+    try {
+      const auth = new AuthModel(data);
+      return await auth.save();
+    } catch (exception) {
+      throw exception;
+    }
+  };
 
 async sendActivationNotification(user) {
     try {
