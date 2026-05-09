@@ -138,6 +138,68 @@ class AuthController {
       throw exception;
     }
   }
+
+  changePassword = async (req,res)=>{
+    try {
+      const accessToken = req.headers["authorization"] || null;
+      if (!accessToken) {
+        throw {
+          code: 401,
+          message: "Unauthorized",
+          status: "UNAUTHORIZED",
+        };
+      }
+      const token = accessToken.replace("Bearer ", "");
+      const authData = await authSvc.getSingleRowByFilter({
+        maskedAccessToken: token,
+      });
+      if (!authData) {
+        throw {
+          code: 401,
+          message: "Token not found",
+          status: "UNDEFINED_TOKEN",
+        };
+      }
+      const data = jwt.verify(authData.accessToken, jwtConfig.secret);
+      if (data.typ !== "Bearer") {
+        throw {
+          code: 401,
+          message: "Bearer token expected",
+          status: "BEARER_TOKEN_EXPECTED",
+        };
+      }
+      const user = await userSvc.getSingleUserByFilter({
+        _id: data.sub,
+      });
+      if (!user) {
+        throw {
+          code: 403,
+          message: "User not found or may have been deleted from the system",
+          status: "USER_NOT_FOUND",
+        };
+      }
+      const {oldPassword,newPassword} = req.body;
+      const isPasswordValid = await bcrypt.compare(oldPassword,user.password);
+      if(!isPasswordValid){
+        throw{
+          code:401,
+          message:"Invalid current password",
+          status:"UNAUTHORIZED"
+        }
+      }
+      const hashedNewPassword = await bcrypt.hash(newPassword,10);
+      user.password = hashedNewPassword;
+      await user.save();
+      await authSvc.logoutFromAll({userId:user._id});
+
+      res.json({
+        message:"Password changed successfully. Please login again.",
+        status:"success"
+      })
+    } catch (exception) {
+      throw exception;
+    }
+  }
 }
 
 const authCltr = new AuthController();

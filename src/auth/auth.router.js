@@ -7,5 +7,6 @@ const UserRegisterationDTO = require("./auth.validator");
 authRouter.post("/register", uploader().single("image"), bodyValidator(UserRegisterationDTO), authCltr.register);
 authRouter.post("/activate",authCltr.activateAccount);
 authRouter.post("/login",authCltr.login);
+authRouter.post("/change-password",authCltr.changePassword);
 
 module.exports = authRouter;
