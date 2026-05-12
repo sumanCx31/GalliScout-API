@@ -29,6 +29,37 @@ class PropertyController {
         }
     };
 
+    // property.controller.js
+getNearbyProperties = async (req, res) => {
+  try {
+    const { lat, lng } = req.query;
+
+    // Convert strings from query to numbers
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+
+    const properties = await Property.find({
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [longitude, latitude], // Longitude first in GeoJSON
+          },
+          $maxDistance: 5000, // Search radius in meters (5km)
+        },
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      count: properties.length,
+      properties,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
     getPropertyById = async (req, res, next) => {
         try {
             const data = await propertySvc.getById(req.params.id);
@@ -40,10 +71,8 @@ class PropertyController {
 
     updateProperty = async (req, res, next) => {
         try {
-            const id = req.params.id;
-            const existingData = await propertySvc.getById(id);
+            const existingData = await propertySvc.getById(req.params.id);
 
-            // Authorization check: Only the owner can update
             if (existingData.owner._id.toString() !== req.authUser._id.toString()) {
                 throw { code: 403, message: "Unauthorized to edit this property" };
             }
@@ -61,14 +90,13 @@ class PropertyController {
 
     deletePropertyById = async (req, res, next) => {
         try {
-            const id = req.params.id;
-            const existingData = await propertySvc.getById(id);
+            const existingData = await propertySvc.getById(req.params.id);
 
             if (existingData.owner._id.toString() !== req.authUser._id.toString()) {
                 throw { code: 403, message: "Unauthorized to delete this property" };
             }
 
-            await propertySvc.deleteById(id);
+            await propertySvc.deleteById(req.params.id);
             res.json({
                 message: "Property deleted successfully",
                 status: "Success",

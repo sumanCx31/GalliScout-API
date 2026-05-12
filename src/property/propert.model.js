@@ -1,14 +1,35 @@
+const { string } = require("joi");
 const mongoose = require("mongoose");
 
-const propertySchema = new mongoose.Schema({
-    title: { type: String, required: true },
+const propertySchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true, trim: true },
     description: { type: String, required: true },
     price: { type: Number, required: true },
-    location: { type: String, required: true },
-    images: [{ type: String }],
-    nearby_amenities: [{ type: String }],
+    
+    location: {
+      type: {
+        type: String, 
+        enum: ['Point'], 
+        default: 'Point'
+      },
+      coordinates: {
+        type: [Number], 
+        required: true
+      },
+      formattedAddress: { type: String, required: true } 
+    },
+
+    images: [{ 
+        publicId: String, 
+        secureUrl: String 
+    }],
+    nearby_amenities: [String],
     status: { type: String, enum: ["vacant", "occupied"], default: "vacant" },
-    owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-}, { timestamps: true });
+  },
+  { timestamps: true }
+);
+
+propertySchema.index({ "location": "2dsphere" });
 
 module.exports = mongoose.model("Property", propertySchema);

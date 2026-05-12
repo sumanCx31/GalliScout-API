@@ -1,17 +1,22 @@
 const Joi = require("joi");
 
 const propertyDTO = Joi.object({
-    title: Joi.string().min(10).max(200).required(),
+    _id: Joi.string().optional(), 
+    title: Joi.string().min(2).max(200).required(),
     description: Joi.string().min(20).required(),
     price: Joi.number().positive().required(),
-    location: Joi.string().required(),
-    images: Joi.array().items(Joi.string().uri()).min(1).required(),
-    nearby_amenities: Joi.array().items(Joi.string()).optional(),
-    status: Joi.string().valid('vacant', 'occupied').default('vacant')
+    location: Joi.object({
+        coordinates: Joi.array().items(Joi.number()).length(2).required(),
+        formattedAddress: Joi.string().required()
+    }).required(),
+    images: Joi.array().items(Joi.object()).optional(), 
+    nearby_amenities: Joi.string().optional(),
+    status: Joi.string().valid('vacant', 'occupied').default('vacant'),
+    owner: Joi.string().optional(),
 });
 
 const updatePropertyDTO = propertyDTO.fork(
-    ['title', 'description', 'price', 'location', 'images'], 
+    ['title', 'description', 'price', 'location'], 
     (field) => field.optional()
 );
 

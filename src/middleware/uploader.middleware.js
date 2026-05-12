@@ -8,39 +8,48 @@ const myStorage = multer.diskStorage({
         if (!fs.existsSync(filePath)) {
             fs.mkdirSync(filePath, { recursive: true });
         }
-        cb(null, filePath)
+        cb(null, filePath);
     },
     filename: (req, file, cb) => {
-        let filename =randomStringGenerator(15)+"-"+ file.originalname;
+        // Cleaning original name to remove spaces (helps with Cloudinary/URL handling)
+        const cleanName = file.originalname.replace(/\s+/g, '-');
+        let filename = randomStringGenerator(15) + "-" + cleanName;
         cb(null, filename);
     },
-})
+});
 
 const uploader = (type = 'image') => {
-    const uploaderConfig = {
-        fileSize: 3000000,
-        fileFilter: function (req, file, cb) {
-            let allowedExts = ['jpg', 'jpeg', 'png', 'gif','svg','webp','bmp'];
-            if(type === "doc"){
-               this.fileSize = 50000000;
-               allowedExts = ['pdf', 'doc', 'docx', 'xls', 'csv', 'json', 'xlsx'];
-            }else if(type === 'audio'){
-                this.fileSize = 70000000;
-                allowedExts = ['mp3', 'wav', 'ogg', 'aac', 'flac'];
-            }
-            const fileExt = file.originalname.split(".").pop()
-            if(allowedExts.includes(fileExt.toLowerCase())){
-                cb(null, true);
-            }else{
-                cb({code: 422, message: "Unsupported file type", status: "INVALID_FILE_TYPE"});
-            }
-        },
+    // Define size limits locally (don't use 'this' inside the filter as it refers to the filter object)
+    let sizeLimit = 3000000; // Default 3MB
+    let allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp'];
+
+    if (type === "doc") {
+        sizeLimit = 50000000; // 50MB
+        allowedExts = ['pdf', 'doc', 'docx', 'xls', 'csv', 'json', 'xlsx'];
+    } else if (type === 'audio') {
+        sizeLimit = 70000000; // 70MB
+        allowedExts = ['mp3', 'wav', 'ogg', 'aac', 'flac'];
     }
+
     return multer({
         storage: myStorage,
-        fileFilter: uploaderConfig.fileFilter,
-        limits: { fileSize: uploaderConfig.fileSize },
-    })
-}
+        limits: { 
+            fileSize: sizeLimit 
+        },
+        fileFilter: (req, file, cb) => {
+            const fileExt = file.originalname.split(".").pop().toLowerCase();
+            
+            if (allowedExts.includes(fileExt)) {
+                cb(null, true);
+            } else {
+                cb({ 
+                    code: 422, 
+                    message: `Unsupported file type. Allowed: ${allowedExts.join(', ')}`, 
+                    status: "INVALID_FILE_TYPE" 
+                });
+            }
+        },
+    });
+};
 
 module.exports = uploader;
