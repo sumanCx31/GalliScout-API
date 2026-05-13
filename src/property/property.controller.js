@@ -1,3 +1,4 @@
+const propertModel = require("./propert.model");
 const propertySvc = require("./property.service");
 
 class PropertyController {
@@ -38,7 +39,7 @@ getNearbyProperties = async (req, res) => {
     const latitude = parseFloat(lat);
     const longitude = parseFloat(lng);
 
-    const properties = await Property.find({
+    const properties = await propertModel.find({
       location: {
         $near: {
           $geometry: {
